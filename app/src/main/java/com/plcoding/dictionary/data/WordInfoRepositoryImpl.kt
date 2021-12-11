@@ -14,31 +14,35 @@ class WordInfoRepositoryImpl(
     private val dao:WordInfoDao,
     private val api:DIctionaryApi): WordInfoRepository {
     override fun getWordInfo(word: String): Flow<Resource<List<WordInfo>>> = flow{
-        emit(Resource.Loading())
-        val result =   dao.getWordInfos(word).map { it.toWordInfo() }
-        emit(Resource.Loading(data=result))
 
-        try{
+        emit(Resource.Loading<List<WordInfo>>())
 
-            val remoteData = api.getWordInfo(word).map { it.toWordInfo() }
+            val result =   dao.getWordInfos(word).map { it.toWordInfo() }
+            emit(Resource.Loading<List<WordInfo>>(data=result))
+
+            try{
+
+            val remoteData = api.getWordInfo(word)
             dao.deleteWordInfos(remoteData.map{it.word})
-            emit(Resource.Success(remoteData))
-
+                dao.insertWordInfos(remoteData.map { it.toWordInfoEntiy()})
+            emit(Resource.Success<List<WordInfo>>(remoteData.map { it.toWordInfo() }))
 
         }
         catch (e: IOException){
 
-            emit(Resource.Error("An error occured. Details: ${e.localizedMessage}"))
+            emit(Resource.Error<List<WordInfo>>(message = "An error occured. Details: ${e.localizedMessage}",
+            data = result))
 
         }
         catch (e:HttpException){
 
-            emit(Resource.Error("An error occured on server. Details: ${e.localizedMessage}"))
+            emit(Resource.Error<List<WordInfo>>("An error occured on server. Details: ${e.localizedMessage}",
+            data = result))
 
         }
 
         val localResponse =   dao.getWordInfos(word).map { it.toWordInfo() }
-        emit(Resource.Success(localResponse))
+        emit(Resource.Success<List<WordInfo>>(localResponse))
 
     }
 }
