@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.google.gson.Gson
 import com.plcoding.dictionary.data.Converter
+import com.plcoding.dictionary.data.WordInfoRepositoryImpl
 import com.plcoding.dictionary.data.local.WordInfosDatabase
 import com.plcoding.dictionary.data.remote.DIctionaryApi
 import com.plcoding.dictionary.data.util.GsonParser
